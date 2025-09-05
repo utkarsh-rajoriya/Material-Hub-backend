@@ -47,8 +47,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers("/api/user/**","/api/getNotes","/api/admin/login").permitAll()
-                                .requestMatchers("/api/admin/**").authenticated()
+                        req.requestMatchers("/api/user/**","/api/getNotes","/api/admin/login" , "/api/getNoteBySearch").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

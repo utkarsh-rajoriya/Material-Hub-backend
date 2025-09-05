@@ -1,7 +1,7 @@
 package com.utkarsh.MaterialHub.controllers;
 
 import com.utkarsh.MaterialHub.Services.AdminService;
-import com.utkarsh.MaterialHub.models.Admin;
+import com.utkarsh.MaterialHub.models.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ public class AdminController {
     }
 
     @PostMapping("create")
-    public ResponseEntity<?> createAdmin(@RequestBody Admin admin){
+    public ResponseEntity<?> createAdmin(@RequestBody User admin){
         return new ResponseEntity<>(adminService.createAdmin(admin) , HttpStatus.OK);
     }
 
@@ -30,19 +30,17 @@ public class AdminController {
 
     @GetMapping("getReqs")
     public ResponseEntity<?> getReqs(){
-        System.out.println("get Req called");
         return new ResponseEntity<>(adminService.getReqs() , HttpStatus.OK);
     }
 
     @PostMapping("approve/{id}")
-    public ResponseEntity<?> approve(@PathVariable("id") String email){
-        System.out.println("id to approve : "+email);
-        return new ResponseEntity<>(adminService.approveTeacher(email) , HttpStatus.OK);
+    public ResponseEntity<?> approve(@PathVariable("id") String id){
+        return new ResponseEntity<>(adminService.approveTeacher(id) , HttpStatus.OK);
     }
 
     @PostMapping("reject/{id}")
     public ResponseEntity<?> reject(@PathVariable("id") String id){
-        System.out.println("id for reject : "+id);
         return new ResponseEntity<>(adminService.rejectTeacher(id) , HttpStatus.OK);
     }
+
 }

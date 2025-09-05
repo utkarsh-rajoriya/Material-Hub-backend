@@ -1,23 +1,26 @@
 package com.utkarsh.MaterialHub.controllers;
 
 import com.utkarsh.MaterialHub.Services.BaseService;
+import com.utkarsh.MaterialHub.Services.SearchQuery;
 import com.utkarsh.MaterialHub.models.Notes;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("api")
 public class BaseController {
-
+    private final SearchQuery searchQuery;
     BaseService baseService;
 
-    public BaseController(BaseService baseService) {
+    public BaseController(BaseService baseService, SearchQuery searchQuery) {
         this.baseService = baseService;
+        this.searchQuery = searchQuery;
     }
 
     @PostMapping("uploadNotes")
@@ -37,9 +40,32 @@ public class BaseController {
     public Page<Notes> getNotes(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        System.out.println(page + size);
         return baseService.getNotes(page, size);
     }
 
+    @GetMapping("/getNoteBySearch")
+    public Page<Notes> searchNotes(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String course,
+            @RequestParam(required = false) String semester,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
 
+        List<Notes> notes = searchQuery.searchNotes(query, course, semester, page, size);
+        long total = searchQuery.countNotes(query, course, semester);
+
+        return new PageImpl<>(notes, PageRequest.of(page, size), total);
+    }
+
+    @GetMapping("myUploads/{name}")
+    public Page<Notes> myUploads(@PathVariable("name") String name,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "4") int size){
+        return baseService.myUploads(name , page, size);
+    }
+
+    @DeleteMapping("deleteNote/{id}")
+    public String deleteNote(@PathVariable("id") String noteId){
+        return baseService.deleteNote(noteId);
+    }
 }

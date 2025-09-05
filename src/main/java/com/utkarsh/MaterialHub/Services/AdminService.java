@@ -1,9 +1,7 @@
 package com.utkarsh.MaterialHub.Services;
 
-import com.utkarsh.MaterialHub.daos.AdminRepo;
 import com.utkarsh.MaterialHub.daos.PendingTeacherRepo;
 import com.utkarsh.MaterialHub.daos.UserRepo;
-import com.utkarsh.MaterialHub.models.Admin;
 import com.utkarsh.MaterialHub.models.PendingTeacher;
 import com.utkarsh.MaterialHub.models.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -19,15 +17,15 @@ public class AdminService {
 
     private final PendingTeacherRepo pendingTeacherRepo;
     private final UserRepo userRepo;
-    private final AdminRepo adminRepo;
     private final JWTService jwtService;
+    private final EmailService emailService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    public AdminService(PendingTeacherRepo pendingTeacherRepo, UserRepo userRepo, AdminRepo adminRepo, JWTService jwtService) {
+    public AdminService(PendingTeacherRepo pendingTeacherRepo, UserRepo userRepo, JWTService jwtService , EmailService emailService) {
         this.pendingTeacherRepo = pendingTeacherRepo;
         this.userRepo = userRepo;
-        this.adminRepo = adminRepo;
         this.jwtService = jwtService;
+        this.emailService = emailService;
     }
 
     // Get all requests
@@ -45,15 +43,37 @@ public class AdminService {
             return res;
         }
 
-        PendingTeacher pendingTeacher = pendingOpt.get();
+        PendingTeacher pendingTeacher_Admin = pendingOpt.get();
 
         User newUser = new User();
-        newUser.setName(pendingTeacher.getName());
-        newUser.setEmail(pendingTeacher.getEmail());
-        newUser.setPassword(pendingTeacher.getPassword()); // already encoded
-
+        newUser.setName(pendingTeacher_Admin.getName());
+        newUser.setEmail(pendingTeacher_Admin.getEmail());
+        newUser.setRole(pendingTeacher_Admin.getRole());
+        newUser.setPassword(encoder.encode(pendingTeacher_Admin.getPassword()));
         userRepo.save(newUser);
-        pendingTeacherRepo.delete(pendingTeacher);
+
+        String subject = String.format(
+                "🎉 Congratulations! You are now approved as %s ✅",
+                pendingTeacher_Admin.getRole()
+        );
+
+        String body = String.format(
+                """
+                Congratulations, Dear %s!  
+        
+                We are excited to inform you that your request for the role of **%s** has been approved ✅.  
+        
+                🚀 You now have access to upload and explore study materials on **Material-Hub**.  
+                📚 Start contributing and help learners around the world!  
+        
+                Wishing you great success ahead,  
+                Utkarsh Rajoriya 🌟
+                """,
+                pendingTeacher_Admin.getName(),
+                pendingTeacher_Admin.getRole()
+        );
+        emailService.sendSimpleEmail(pendingTeacher_Admin.getEmail(), subject , body);
+        pendingTeacherRepo.delete(pendingTeacher_Admin);
 
         res.put("message", "Teacher approved successfully");
         return res;
@@ -75,9 +95,9 @@ public class AdminService {
     }
 
     // Create a new Admin
-    public Map<String, String> createAdmin(Admin admin) {
+    public Map<String, String> createAdmin(User admin) {
         Map<String, String> res = new HashMap<>();
-        Optional<Admin> adm = adminRepo.findByEmail(admin.getEmail());
+        Optional<User> adm = userRepo.findByEmail(admin.getEmail());
 
         if (adm.isPresent()) {
             res.put("message", "Admin already exists");
@@ -85,7 +105,8 @@ public class AdminService {
         }
 
         admin.setPassword(encoder.encode(admin.getPassword()));
-        adminRepo.save(admin);
+        admin.setRole("Admin");
+        userRepo.save(admin);
 
         res.put("message", "Admin created successfully");
         return res;
@@ -94,14 +115,18 @@ public class AdminService {
     // Admin login
     public Map<String, String> login(String email, String password) {
         Map<String, String> adminInfo = new HashMap<>();
-        Optional<Admin> adm = adminRepo.findByEmail(email);
+        Optional<User> adm = userRepo.findByEmail(email);
 
         if (adm.isEmpty()) {
             adminInfo.put("message", "Admin not exist");
             return adminInfo;
         }
 
-        Admin existingAdmin = adm.get();
+        User existingAdmin = adm.get();
+        if(!existingAdmin.getRole().equals("Admin")){
+            adminInfo.put("message", "You are not Admin!");
+            return adminInfo;
+        }
 
         if (encoder.matches(password, existingAdmin.getPassword())) {
             adminInfo.put("adminToken", jwtService.generateToken(email));

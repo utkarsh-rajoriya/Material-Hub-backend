@@ -12,10 +12,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+
 @Service
 public class BaseService {
     private final NoteRepo noteRepo;
     private final CloudinaryService cloudinaryService;
+
 
     public BaseService(NoteRepo noteRepo, CloudinaryService cloudinaryService) {
         this.noteRepo = noteRepo;
@@ -33,4 +35,21 @@ public class BaseService {
         Pageable pageable = PageRequest.of(page, size);
         return noteRepo.findAll(pageable);
     }
+
+    public Page<Notes> myUploads(String name, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return noteRepo.myUpload(name, pageable);
+    }
+
+    public String deleteNote(String id) {
+        Notes note = noteRepo.findById(id).orElse(null);
+        if (note == null) {
+            return "Not not present";
+        }
+
+        cloudinaryService.dltNote(note.getFileUrl());
+        noteRepo.deleteById(id);
+        return "Note deleted successfully";
+    }
+
 }
