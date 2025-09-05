@@ -36,12 +36,12 @@ public class BaseController {
         }
     }
 
-    @GetMapping("getNotes")
-    public Page<Notes> getNotes(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
-        return baseService.getNotes(page, size);
-    }
+//    @GetMapping("getNotes")
+//    public Page<Notes> getNotes(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "5") int size) {
+//        return baseService.getNotes(page, size);
+//    }
 
     @GetMapping("/getNoteBySearch")
     public Page<Notes> searchNotes(

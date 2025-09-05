@@ -7,6 +7,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.AggregateIterable;
 import com.utkarsh.MaterialHub.models.Notes;
 import org.bson.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,8 +19,8 @@ public class SearchQuery {
 
     private final MongoCollection<Document> collection;
 
-    public SearchQuery() {
-        MongoClient mongoClient = MongoClients.create("mongodb+srv://utkarshrajoriya00:0624@utkarsh.pitol.mongodb.net/Material-Hub");
+    public SearchQuery(@Value("${Mongo_Url}") String mongoConnection) {
+        MongoClient mongoClient = MongoClients.create(mongoConnection);
         MongoDatabase database = mongoClient.getDatabase("Material-Hub");
         this.collection = database.getCollection("notes");
     }
@@ -27,7 +28,6 @@ public class SearchQuery {
     public List<Notes> searchNotes(String query, String course, String semester, int page, int size) {
         List<Document> pipeline = new ArrayList<>();
 
-        // 🔍 Text search
         if (query != null && !query.isEmpty()) {
             pipeline.add(new Document("$search",
                     new Document("index", "default")
@@ -36,17 +36,14 @@ public class SearchQuery {
             );
         }
 
-        // 🎓 Course filter
         if (course != null && !course.isEmpty()) {
             pipeline.add(new Document("$match", new Document("course", course)));
         }
 
-        // 📚 Semester filter
         if (semester != null && !semester.isEmpty()) {
             pipeline.add(new Document("$match", new Document("semester", semester)));
         }
 
-        // ⏩ Pagination
         pipeline.add(new Document("$skip", page * size));
         pipeline.add(new Document("$limit", size));
 
@@ -68,7 +65,6 @@ public class SearchQuery {
         return notesList;
     }
 
-    // Count total results for pagination
     public long countNotes(String query, String course, String semester) {
         List<Document> pipeline = new ArrayList<>();
 
