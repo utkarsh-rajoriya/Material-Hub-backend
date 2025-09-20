@@ -15,7 +15,13 @@ pipeline {
 
         stage('Run') {
             steps {
-                sh 'nohup java -jar target/*.jar --server.address=0.0.0.0 --server.port=8081 > app.log 2>&1 &'
+                sh '''
+                    nohup java -jar target/*.jar \
+                        --server.address=0.0.0.0 \
+                        --server.port=8081 > app.log 2>&1 &
+                    sleep 5
+                '''
+                sh 'tail -n 50 app.log'
             }
         }
     }
