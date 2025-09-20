@@ -1,24 +1,22 @@
 pipeline {
     agent any
 
-    stages{
-        stage('Build'){
-            steps{
+    stages {
+        stage('Build & Run') {
+            steps {
                 withCredentials([file(credentialsId: 'material-hub-envs', variable: 'ENV_FILE')]) {
                     sh '''
-                        echo "Copying secret env file..."
+                        # Load environment variables from secret file
+                        export $(grep -v '^#' $ENV_FILE | xargs)
+
+                        # Build Spring Boot app
                         mvn clean package -DskipTests
-                        cp $ENV_FILE target/.env
-                        export $(cat target/.env | xargs)
+
+                        # Run the app
+                        java -jar target/*.jar &
                     '''
                 }
             }
         }
-
-        stage('Run'){
-            steps{
-                sh 'java -jar target/*.jar'
-            }
-        }
     }
-}   
+}
