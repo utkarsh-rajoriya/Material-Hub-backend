@@ -15,9 +15,7 @@ pipeline {
 
         stage('Run') {
             steps {
-                sh 'nohup java -jar target/MaterialHub-0.0.1-SNAPSHOT.jar --server.port=8081 --server.address=0.0.0.0 > app.log 2>&1 &'
-
-
+                sh 'nohup java -jar target/*.jar --server.address=0.0.0.0 --server.port=8081 > app.log 2>&1 &'
             }
         }
     }
