@@ -11,7 +11,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final String senderEmail;
 
-    public EmailService(@Value("${SENDER_EMAIL}") String email , JavaMailSender mailSender) {
+    public EmailService(@Value("${Sender_Email}") String email , JavaMailSender mailSender) {
         this.mailSender = mailSender;
         this.senderEmail = email;
     }

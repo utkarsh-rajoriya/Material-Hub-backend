@@ -19,7 +19,7 @@ public class SearchQuery {
 
     private final MongoCollection<Document> collection;
 
-    public SearchQuery(@Value("${MONGO_URL}") String DBurl) {
+    public SearchQuery(@Value("${Mongo_Url}") String DBurl) {
         MongoClient mongoClient = MongoClients.create(DBurl);
         MongoDatabase database = mongoClient.getDatabase("Material-Hub");
         this.collection = database.getCollection("notes");
