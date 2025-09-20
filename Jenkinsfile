@@ -7,9 +7,9 @@ pipeline {
                 withCredentials([file(credentialsId: 'material-hub-envs', variable: 'ENV_FILE')]) {
                     sh '''
                         echo "Copying secret env file..."
+                        mvn clean package -DskipTests
                         cp $ENV_FILE target/.env
                         export $(cat target/.env | xargs)
-                        mvn clean package -DskipTests
                     '''
                 }
             }
