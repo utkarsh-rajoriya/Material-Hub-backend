@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -21,6 +23,11 @@ public class BaseController {
     public BaseController(BaseService baseService, SearchQuery searchQuery) {
         this.baseService = baseService;
         this.searchQuery = searchQuery;
+    }
+
+    @GetMapping("test")
+    public String test(){
+        return "This is testing url";
     }
 
     @PostMapping("uploadNotes")
