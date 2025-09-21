@@ -30,6 +30,11 @@ public class BaseController {
         return "This is testing url";
     }
 
+    @GetMapping("testing")
+    public String testing(){
+        return "This is testing1";
+    }
+
     @PostMapping("uploadNotes")
     public ResponseEntity<Notes> uploadNotes(
             @RequestPart("note") Notes note,
