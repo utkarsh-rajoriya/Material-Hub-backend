@@ -32,7 +32,7 @@ public class BaseController {
 
     @GetMapping("testing")
     public String testing(){
-        return "This is testing1";
+        return "This is testing";
     }
 
     @PostMapping("uploadNotes")
