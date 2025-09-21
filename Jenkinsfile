@@ -1,46 +1,28 @@
-// pipeline {
-//     agent any
+pipeline {
+    agent any
+    
+    tools{
+        maven 'maven_3.9.11'
+        jdk 'java_24'
+    }
 
-//     stages {
-//         stage('Build & Run') {
-//             steps {
-//                 withCredentials([file(credentialsId: 'material-hub-envs', variable: 'ENV_FILE')]) {
-//                     sh '''
-//                         # Load environment variables
-//                         export $(grep -v '^#' $ENV_FILE | xargs)
-//                         echo "Mongo URL: $MONGO_URL"
-
-//                         # Build the app
-//                         mvn clean package -DskipTests
-
-//                         # Stop any previous instance
-//                         if [ -f app.pid ]; then
-//                             kill $(cat app.pid) || true
-//                             rm -f app.pid
-//                         fi
-
-//                         # Run the app in background
-//                         nohup java -jar target/*.jar \
-//                             --server.address=0.0.0.0 \
-//                             --server.port=8081 > app.log 2>&1 &
-
-//                         # Save PID to terminate later
-//                         echo $! > app.pid
-
-//                         # Stream logs in real-time
-//                         echo "Streaming full logs (terminate after 60s)..."
-//                         tail -f app.log &
-//                         LOG_PID=$!
-//                         sleep 60  # adjust how long you want to see logs
-//                         kill $LOG_PID || true
-
-//                         # Stop the app after log streaming
-//                         kill $(cat app.pid) || true
-//                         rm -f app.pid
-//                         echo "App terminated after log streaming."
-//                     '''
-//                 }
-//             }
-//         }
-//     }
-// }
+    stages {
+        stage('Build') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/utkarsh-rajoriya/Material-Hub-backend']])
+                bat 'mvn clean install -DskipTests'
+            }
+        }
+        
+        stage('Build Docker image & run'){
+            steps {
+                bat 'docker build -t materialhub .'
+                withCredentials([file(credentialsId: 'material-hub-envs', variable: 'ENV_FILE')]) {
+                    bat 'docker stop MaterialHub-container || echo "No running container"'
+                    bat 'docker rm MaterialHub-container || echo "No old container"'
+                    bat 'docker run -d --name MaterialHub-container --env-file %ENV_FILE% -p 8081:8081 materialhub'
+                }
+            }
+        }
+    }
+}
