@@ -35,6 +35,11 @@ public class BaseController {
         return "This is testing";
     }
 
+    @GetMapping("testing2")
+    public String testing2(){
+        return "This is testing 2 functions \n BTW u made it utkrash, You are Gr8🔥";
+    }
+
     @PostMapping("uploadNotes")
     public ResponseEntity<Notes> uploadNotes(
             @RequestPart("note") Notes note,
